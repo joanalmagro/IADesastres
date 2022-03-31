@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="IADesastres">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/AIMA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Desastres.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
