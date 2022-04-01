@@ -2,15 +2,23 @@ import IA.Desastres.Centro;
 import IA.Desastres.Grupo;
 
 import java.util.ArrayList;
+import java.util.List;
 
 // Representa una salida de un helicóptero. El helicoptero se encuentra en el centro C y rescata a los grupos
 // g1, g2, y g3. Si alguno es nulo, no lo tiene en cuenta.
 class DesastresSalidaHelicoptero {
+
+    private static final double CAPACIDAD_HELICOPTERO = 15;
+    private static final double VELOCIDAD_HELICOPTERO = 100.0/60; // km/min
+    private static final double TIEMPO_RESCATE_PERSONA = 1; // min
+    private static final double FACTOR_HERIDO = 2; // se tarda el doble en rescatar a un herido
+
     Centro c;
     Grupo g1;
     Grupo g2;
     Grupo g3;
 
+    public DesastresSalidaHelicoptero() { }
     public DesastresSalidaHelicoptero(Centro c, Grupo g1, Grupo g2, Grupo g3) {
         this.c = c;
         this.g1 = g1;
@@ -18,7 +26,73 @@ class DesastresSalidaHelicoptero {
         this.g3 = g3;
     }
 
-    public double getDistanciaVuelo() {
+    public List<Grupo> grupos() {
+        return List.of(new Grupo[]{g1, g2, g3});
+    }
+
+    @Override
+    public DesastresSalidaHelicoptero clone() {
+        DesastresSalidaHelicoptero ret = new DesastresSalidaHelicoptero();
+        ret.c = this.c;
+        ret.g1 = this.g1;
+        ret.g2 = this.g2;
+        ret.g3 = this.g3;
+        return ret;
+    }
+
+    private int personasRescatadas() {
+        return (g1 == null ? 0 : g1.getNPersonas()) +
+                (g2 == null ? 0 : g2.getNPersonas()) +
+                (g3 == null ? 0 : g3.getNPersonas());
+    }
+
+
+
+    // intenta asignar el grupo g a los grupos rescatados. Si ha sido posible, devuelve true
+    public boolean asignaGrupo(Grupo g) {
+        if (g.getNPersonas() + personasRescatadas() > CAPACIDAD_HELICOPTERO) {
+            return false;
+        }
+        if (g1 == null) {
+            g1 = g;
+        } else if (g2 == null) {
+            g2 = g;
+        } else if (g3 == null) {
+            g3 = g;
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    // desasigna el grupo g a la salida.
+    public void desasignaGrupo(Grupo g) {
+        if (g == g1) {
+            g1 = null;
+        } else if (g == g2) {
+            g2 = null;
+        } else if (g == g3) {
+            g3 = null;
+        }
+    }
+
+    public double tiempo() {
+        return tiempoRescate() + tiempoVuelo();
+    }
+
+    private double tiempoRescate() {
+        double tiempo = 0;
+        for (Grupo g : grupos()) {
+            if (g != null) {
+                double factor = g.getPrioridad() == 1? FACTOR_HERIDO : 1;
+                tiempo += factor * g.getNPersonas() * TIEMPO_RESCATE_PERSONA;
+            }
+        }
+        return tiempo;
+    }
+
+
+    private double tiempoVuelo() {
         ArrayList<Grupo> grupos = new ArrayList<>();
         if (g1 != null) grupos.add(g1);
         if (g2 != null) grupos.add(g2);
@@ -47,10 +121,10 @@ class DesastresSalidaHelicoptero {
         } else {
             Grupo g0 = trayectoOptimo.get(0);
             Grupo gf = trayectoOptimo.get(trayectoOptimo.size() - 1);
-
-            return d(c.getCoordX(), c.getCoordY(), g0.getCoordX(), g0.getCoordY()) +
+            double distancia = d(c.getCoordX(), c.getCoordY(), g0.getCoordX(), g0.getCoordY()) +
                     distanciaOptimaGrupos +
                     d(gf.getCoordX(), gf.getCoordY(), c.getCoordX(), c.getCoordY());
+            return distancia / VELOCIDAD_HELICOPTERO;
         }
     }
 

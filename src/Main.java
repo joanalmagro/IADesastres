@@ -26,29 +26,28 @@ public class Main {
         // Inicialicamos estado
         DesastresEstado estadoInicial = new DesastresEstado(ncentros, nhelicopteros, ngrupos, seed);
 
-        //
         System.out.println("---------------------- ESTADO INICIAL ---------------");
         System.out.println(estadoInicial.display());
         System.out.println();
 
         // Create the Problem object
-        Problem p = new  Problem(estadoInicial,
-                    new DesastresSuccessorFunction(),
-                    new DesastresGoalTest(),
-                    new DesastresHeuristicFunction1());
+        Problem p = new Problem(estadoInicial,
+                new DesastresSuccessorFunction(),
+                new DesastresGoalTest(),
+                new DesastresHeuristicFunction1());
 
         // Instantiate the SearchAgent object
         long t0 = java.lang.System.currentTimeMillis();
         SearchAgent agent = new SearchAgent(p, algHC);
         long tf = java.lang.System.currentTimeMillis();
 
-        DesastresEstado estadoFinal = (DesastresEstado)algHC.getGoalState();
+        DesastresEstado estadoFinal = (DesastresEstado) algHC.getGoalState();
 
 
         System.out.println("---------------------- ESTADO FINAL ---------------");
         System.out.println(estadoFinal.display());
         System.out.println();
-        System.out.println("Elapsed time: "+ (tf - t0) + "ms");
+        System.out.println("Elapsed time: " + (tf - t0) + "ms");
 
         System.out.println(agent.getActions().toString());
         System.out.println(agent.getInstrumentation().toString());

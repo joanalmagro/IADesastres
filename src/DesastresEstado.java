@@ -7,12 +7,7 @@ import java.util.ArrayList;
 
 public class DesastresEstado {
 
-    private static final double CAPACIDAD_HELICOPTERO = 15;
-    private static final double VELOCIDAD_HELICOPTERO = 100.0/60; // km/min
-    private static final double COOLDOWN_HELICOPTERO = 10; // min
-
-    private static final double TIEMPO_RESCATE_PERSONA = 1; // min
-    private static final double FACTOR_HERIDO = 2; // se tarda el doble en rescatar a un herido
+    private static final double COOLDOWN_SALIDA = 10; // min
 
     private Centros centros;
     private Grupos grupos;
@@ -21,14 +16,26 @@ public class DesastresEstado {
     private ArrayList<ArrayList<ArrayList<DesastresSalidaHelicoptero>>> salidas;
     //      \centros/ \helicop/ \salidas/
 
+
+
     // Constructor
     public DesastresEstado(int ncentros, int nhelicopteros, int ngrupos, int seed) {
         this.centros = new Centros(ncentros, nhelicopteros, seed);
         this.grupos = new Grupos(ngrupos, seed);
 
         // TODO Solucion Inicial
-
     }
+
+    // Devuelve un nuevo estado resultando de cambiar la asignacion del
+    public DesastresEstado move(int igrupo, int centro0, int helicoptero0, int centroF, int helicopteroF) {
+        Grupo grupo = grupos.get(igrupo);
+        ArrayList<DesastresSalidaHelicoptero> salidasHelicoptero0 = salidas.get(centro0).get(helicoptero0);
+        for (DesastresSalidaHelicoptero salida : salidasHelicoptero0) {
+
+        }
+        return null;
+    }
+
 
     // devuelve el tiempo total en rescatar a todos los grupos,
     // el tiempo total hasta rescatar todos a los grupos de prioridad
@@ -51,22 +58,20 @@ public class DesastresEstado {
             for (int iHelicop = 0; iHelicop < centro.getNHelicopteros(); ++iHelicop) {
                 ArrayList<DesastresSalidaHelicoptero> salidasHelicoptero = salidas.get(iCentro).get(iHelicop);
                 // para cada salida del helicóptero,
+                boolean primeraSalida = true;
                 for (DesastresSalidaHelicoptero salida : salidasHelicoptero) {
+                    if (primeraSalida) {
+                        primeraSalida = false;
+                    } else {
+                        tiempoTotal = COOLDOWN_SALIDA;
+                    }
                     // añadimos el tiempo de vuelo vuelo
-                    tiempoTotal += salida.getDistanciaVuelo() / VELOCIDAD_HELICOPTERO;
-
-                    // y el tiempo de rescatar a los grupos
-                    tiempoTotal += tiempoRescate(salida.g1) +
-                            tiempoRescate(salida.g2) +
-                            tiempoRescate(salida.g3);
-
+                    tiempoTotal += salida.tiempo();
                     // marcamos los grupos como rescatados
                     gruposPrioridadNoRescatados.remove(salida.g1);
                     gruposPrioridadNoRescatados.remove(salida.g2);
                     gruposPrioridadNoRescatados.remove(salida.g3);
                 }
-                tiempoTotal += COOLDOWN_HELICOPTERO;
-
                 if (gruposPrioridadNoRescatados.isEmpty()) {
                     tiempoPrioridad = tiempoTotal;
                 }
@@ -79,10 +84,13 @@ public class DesastresEstado {
         return "";
     }
 
-    // tiempo en rescatar el grupo G.
-    private static double tiempoRescate(Grupo g) {
-        double tiempo = g.getNPersonas() * TIEMPO_RESCATE_PERSONA;
-        if (g.getPrioridad() == 1) tiempo *= FACTOR_HERIDO;
-        return tiempo;
+    @Override
+    public DesastresEstado clone() throws CloneNotSupportedException {
+        // No hace falta clonar centros y grupos ya que son constantes.
+        DesastresEstado ret = (DesastresEstado) (super.clone());
+
+        // clonamos las salidas
+        ret.salidas = (ArrayList<ArrayList<ArrayList<DesastresSalidaHelicoptero>>>)salidas.clone();
+        return ret;
     }
 }
