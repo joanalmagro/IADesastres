@@ -7,10 +7,10 @@ import java.util.ArrayList;
 // g1, g2, y g3. Si alguno es nulo, no lo tiene en cuenta.
 class DesastresRescate {
 
-    private static final double CAPACIDAD_HELICOPTERO = 15;
-    private static final double VELOCIDAD_HELICOPTERO = 100.0/60; // km/min
-    private static final double TIEMPO_RESCATE_PERSONA = 1; // min
-    private static final double FACTOR_HERIDO = 2; // se tarda el doble en rescatar a un herido
+    private static final int CAPACIDAD_HELICOPTERO = 15;
+    private static final double VELOCIDAD_HELICOPTERO = 100.0/60.0; // km/min
+    private static final double TIEMPO_RESCATE_PERSONA = 1.0; // min
+    private static final double FACTOR_HERIDO = 2.0; // se tarda el doble en rescatar a un herido
 
     private Centro c;
     private Grupo g1;
@@ -70,16 +70,16 @@ class DesastresRescate {
     }
 
     public boolean rescataGrupo(Grupo g) {
-        return g == null || g.equals(g1) ||g.equals(g2) || g.equals(g3);
+        return g == null || g.equals(g1) || g.equals(g2) || g.equals(g3);
     }
 
     // desasigna el grupo g a la salida.
     public void desasignaGrupo(Grupo g) {
-        if (g == g1) {
+        if (g.equals(g1)) {
             g1 = null;
-        } else if (g == g2) {
+        } else if (g.equals(g2)) {
             g2 = null;
-        } else if (g == g3) {
+        } else if (g.equals(g3)) {
             g3 = null;
         }
     }
@@ -89,7 +89,7 @@ class DesastresRescate {
     }
 
     private double tiempoRescate() {
-        double tiempo = 0;
+        double tiempo = 0.0;
         for (Grupo g : grupos()) {
             if (g != null) {
                 double factor = g.getPrioridad() == 1? FACTOR_HERIDO : 1;

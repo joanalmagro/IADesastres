@@ -9,6 +9,7 @@ public class DesastresEstado {
 
     public enum ModoInicial {
         ESTUPIDO,
+        LLENA_RESCATES,
         PRIMERO_PRIO,
     }
 
@@ -22,6 +23,9 @@ public class DesastresEstado {
 
     public Centros getCentros() { return centros; }
     public Grupos getGrupos() { return grupos; }
+    public int getNRescates(int centro, int helicoptero) {
+        return rescates.get(centro).get(helicoptero).size();
+    }
 
 
     private DesastresEstado(Centros centros, Grupos grupos) {
@@ -51,11 +55,26 @@ public class DesastresEstado {
                     rescates.get(0).get(0).add(new DesastresRescate(centros.get(0), grupo, null, null));
                 }
                 break;
+            case LLENA_RESCATES: // Igual que el primero, pero intentando juntar grupos en un mismo rescate
+                for (Grupo grupo : grupos) {
+                    ArrayList<DesastresRescate> rescatesH = rescates.get(0).get(0);
+                    boolean asignado = false;
+                    for (DesastresRescate rescate : rescatesH) {
+                        if (rescate.asignaGrupo(grupo)) {
+                            asignado = true;
+                            break;
+                        }
+                    }
+                    if (!asignado)
+                        rescatesH.add(new DesastresRescate(centros.get(0), grupo, null, null));
+
+                }
             case PRIMERO_PRIO:
                 /* TODO! Implementar más soluciones iniciales. Por ejemplo que primero se rescaten los grupos de prioridad */
                 break;
         }
     }
+
 
     /**
      * @return Si grupo era rescatado por el helicoptero0 del centro0 devuelve un nuevo estado en el que
@@ -106,8 +125,8 @@ public class DesastresEstado {
             }
         }
 
-        double tiempoTotal = 0; // en minutos
-        double tiempoPrioridad = 0; // tiempo en rescatar los grupos con prioridad
+        double tiempoTotal = 0.0; // en minutos
+        double tiempoPrioridad = -1; // tiempo en rescatar los grupos con prioridad
 
         // para cada centro,
         for (int iCentro = 0; iCentro < centros.size(); ++iCentro) {
@@ -121,7 +140,7 @@ public class DesastresEstado {
                     if (primerRescate) {
                         primerRescate = false;
                     } else {
-                        tiempoTotal = COOLDOWN_RESCATE;
+                        tiempoTotal += COOLDOWN_RESCATE;
                     }
                     // añadimos el tiempo de vuelo vuelo
                     tiempoTotal += rescate.tiempo();
@@ -130,7 +149,7 @@ public class DesastresEstado {
                     for (Grupo g : rescate.grupos())
                         gruposPrioridadNoRescatados.remove(g);
                 }
-                if (gruposPrioridadNoRescatados.isEmpty()) {
+                if (gruposPrioridadNoRescatados.isEmpty() && tiempoPrioridad == -1) {
                     tiempoPrioridad = tiempoTotal;
                 }
             }
@@ -162,6 +181,11 @@ public class DesastresEstado {
             }
         }
         return ret.toString();
+    }
+
+    public String infoTiempos() {
+        double[] tiempos = this.tiempoRescateTotalYPrioridad();
+        return String.format("\nTiempo total rescates: %s min\nTiempo hasta todos PRIO rescatados: %s min\n", tiempos[0], tiempos[1]);
     }
 
     @Override

@@ -6,6 +6,6 @@ public class DesastresHeuristicFunction1 implements HeuristicFunction {
     // Devolvemos el tiempo en hacer el rescate total.
     public double getHeuristicValue(Object o) {
         DesastresEstado desastresEstado = (DesastresEstado)o;
-        return -desastresEstado.tiempoRescateTotalYPrioridad()[0];
+        return desastresEstado.tiempoRescateTotalYPrioridad()[0];
     }
 }

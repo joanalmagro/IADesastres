@@ -8,13 +8,13 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // Parametros del problema
         int ncentros = 5;
-        int ngrupos = 10;
-        int nhelicopteros = 2;
+        int ngrupos = 100;
+        int nhelicopteros = 1;
 
-        int seed = 31415;
+        int seed = 31416;
 
         // Parámetros Simulated Annealing
-        int steps = 300000;
+        int steps = 3000;
         int stiter = 5000;
         int k = 5;
         double lamb = 0.01;
@@ -22,35 +22,37 @@ public class Main {
         // Algoritmos de busqueda: HC o SA
         Search algHC = new HillClimbingSearch();
         Search algSA = new SimulatedAnnealingSearch(steps, stiter, k, lamb);
+        Search alg = algHC;
 
         // Inicialicamos estado
-        DesastresEstado estadoInicial = new DesastresEstado(ncentros, nhelicopteros, ngrupos, seed, DesastresEstado.ModoInicial.ESTUPIDO);
+        DesastresEstado estadoInicial = new DesastresEstado(ncentros, nhelicopteros, ngrupos, seed, DesastresEstado.ModoInicial.LLENA_RESCATES);
 
+        System.out.println("---------------------- INFO CENTROS ---------------");
         System.out.println(estadoInicial.infoGrupos());
 
         System.out.println("---------------------- ESTADO INICIAL ---------------");
         System.out.println(estadoInicial.infoRescates());
-        System.out.println();
+        System.out.println(estadoInicial.infoTiempos());
 
-        // Create the Problem object
+        // Problema
         Problem p = new Problem(estadoInicial,
                 new DesastresSuccessorFunction(),
                 new DesastresGoalTest(),
                 new DesastresHeuristicFunction2());
 
-        // Instantiate the SearchAgent object
+        // Ejecuta SearchAgent
         long t0 = java.lang.System.currentTimeMillis();
-        SearchAgent agent = new SearchAgent(p, algHC);
+        SearchAgent agent = new SearchAgent(p, alg);
         long tf = java.lang.System.currentTimeMillis();
-
-        DesastresEstado estadoFinal = (DesastresEstado) algHC.getGoalState();
-
+        DesastresEstado estadoFinal = (DesastresEstado) alg.getGoalState();
 
         System.out.println("---------------------- ESTADO FINAL ---------------");
         System.out.println(estadoFinal.infoRescates());
-        System.out.println();
-        System.out.println("Elapsed time: " + (tf - t0) + "ms");
+        System.out.println(estadoFinal.infoTiempos());
 
+
+        System.out.println("---------------------- SEARCH AGENT INFO ---------------");
+        System.out.println("Elapsed time: " + (tf - t0) + "ms");
         System.out.println(agent.getActions().toString());
         System.out.println(agent.getInstrumentation().toString());
     }

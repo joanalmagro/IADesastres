@@ -7,6 +7,6 @@ public class DesastresHeuristicFunction2 implements HeuristicFunction {
     public double getHeuristicValue(Object o) {
         DesastresEstado desastresEstado = (DesastresEstado)o;
         double[] tiempos = desastresEstado.tiempoRescateTotalYPrioridad();
-        return -tiempos[0]*tiempos[1];
+        return (tiempos[0] + tiempos[1]);
     }
 }
