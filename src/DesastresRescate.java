@@ -2,37 +2,41 @@ import IA.Desastres.Centro;
 import IA.Desastres.Grupo;
 
 import java.util.ArrayList;
-import java.util.List;
 
-// Representa una salida de un helicóptero. El helicoptero se encuentra en el centro C y rescata a los grupos
+// Representa un rescate de un helicóptero. El helicoptero se encuentra en el centro C y rescata a los grupos
 // g1, g2, y g3. Si alguno es nulo, no lo tiene en cuenta.
-class DesastresSalidaHelicoptero {
+class DesastresRescate {
 
     private static final double CAPACIDAD_HELICOPTERO = 15;
     private static final double VELOCIDAD_HELICOPTERO = 100.0/60; // km/min
     private static final double TIEMPO_RESCATE_PERSONA = 1; // min
     private static final double FACTOR_HERIDO = 2; // se tarda el doble en rescatar a un herido
 
-    Centro c;
-    Grupo g1;
-    Grupo g2;
-    Grupo g3;
+    private Centro c;
+    private Grupo g1;
+    private Grupo g2;
+    private Grupo g3;
 
-    public DesastresSalidaHelicoptero() { }
-    public DesastresSalidaHelicoptero(Centro c, Grupo g1, Grupo g2, Grupo g3) {
+    public DesastresRescate() { }
+
+    public DesastresRescate(Centro c, Grupo g1, Grupo g2, Grupo g3) {
         this.c = c;
         this.g1 = g1;
         this.g2 = g2;
         this.g3 = g3;
     }
 
-    public List<Grupo> grupos() {
-        return List.of(new Grupo[]{g1, g2, g3});
+    public ArrayList<Grupo> grupos() {
+        ArrayList<Grupo> ret = new ArrayList<>();
+        ret.add(g1);
+        ret.add(g2);
+        ret.add(g3);
+        return ret;
     }
 
     @Override
-    public DesastresSalidaHelicoptero clone() {
-        DesastresSalidaHelicoptero ret = new DesastresSalidaHelicoptero();
+    public DesastresRescate clone() {
+        DesastresRescate ret = new DesastresRescate();
         ret.c = this.c;
         ret.g1 = this.g1;
         ret.g2 = this.g2;
@@ -40,7 +44,7 @@ class DesastresSalidaHelicoptero {
         return ret;
     }
 
-    private int personasRescatadas() {
+    public int personasRescatadas() {
         return (g1 == null ? 0 : g1.getNPersonas()) +
                 (g2 == null ? 0 : g2.getNPersonas()) +
                 (g3 == null ? 0 : g3.getNPersonas());
@@ -50,7 +54,7 @@ class DesastresSalidaHelicoptero {
 
     // intenta asignar el grupo g a los grupos rescatados. Si ha sido posible, devuelve true
     public boolean asignaGrupo(Grupo g) {
-        if (g.getNPersonas() + personasRescatadas() > CAPACIDAD_HELICOPTERO) {
+        if (g.getNPersonas() + personasRescatadas() > CAPACIDAD_HELICOPTERO || rescataGrupo(g)) {
             return false;
         }
         if (g1 == null) {
@@ -63,6 +67,10 @@ class DesastresSalidaHelicoptero {
             return false;
         }
         return true;
+    }
+
+    public boolean rescataGrupo(Grupo g) {
+        return g == null || g.equals(g1) ||g.equals(g2) || g.equals(g3);
     }
 
     // desasigna el grupo g a la salida.
@@ -90,7 +98,6 @@ class DesastresSalidaHelicoptero {
         }
         return tiempo;
     }
-
 
     private double tiempoVuelo() {
         ArrayList<Grupo> grupos = new ArrayList<>();

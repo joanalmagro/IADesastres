@@ -7,34 +7,92 @@ import java.util.ArrayList;
 
 public class DesastresEstado {
 
-    private static final double COOLDOWN_SALIDA = 10; // min
+    public enum ModoInicial {
+        ESTUPIDO,
+        PRIMERO_PRIO,
+    }
 
-    private Centros centros;
-    private Grupos grupos;
+    private static final double COOLDOWN_RESCATE = 10; // min
+
+    private final Centros centros;
+    private final Grupos grupos;
+
+    private ArrayList<ArrayList<ArrayList<DesastresRescate>>> rescates;
+    //      \centros/ \helicop/ \rescates/
+
+    public Centros getCentros() { return centros; }
+    public Grupos getGrupos() { return grupos; }
 
 
-    private ArrayList<ArrayList<ArrayList<DesastresSalidaHelicoptero>>> salidas;
-    //      \centros/ \helicop/ \salidas/
-
-
+    private DesastresEstado(Centros centros, Grupos grupos) {
+        this.centros = centros;
+        this.grupos = grupos;
+    }
 
     // Constructor
-    public DesastresEstado(int ncentros, int nhelicopteros, int ngrupos, int seed) {
+    public DesastresEstado(int ncentros, int nhelicopteros, int ngrupos, int seed, ModoInicial inicio) {
         this.centros = new Centros(ncentros, nhelicopteros, seed);
         this.grupos = new Grupos(ngrupos, seed);
 
-        // TODO Solucion Inicial
+        rescates = new ArrayList<>();
+        // Inicializamos los trayectos de los helicopteros
+        for (Centro centro : centros) {
+            ArrayList<ArrayList<DesastresRescate>> rescatesCentro = new ArrayList<>();
+            for (int i = 0; i < centro.getNHelicopteros(); ++i) {
+                rescatesCentro.add(new ArrayList<>());
+            }
+            rescates.add(rescatesCentro);
+        }
+
+
+        switch (inicio) {
+            case ESTUPIDO: // El primer helicoptero del primer grupo lo hace todo
+                for (Grupo grupo : grupos) {
+                    rescates.get(0).get(0).add(new DesastresRescate(centros.get(0), grupo, null, null));
+                }
+                break;
+            case PRIMERO_PRIO:
+                /* TODO! Implementar más soluciones iniciales. Por ejemplo que primero se rescaten los grupos de prioridad */
+                break;
+        }
     }
 
-    // Devuelve un nuevo estado resultando de cambiar la asignacion del
-    public DesastresEstado move(int igrupo, int centro0, int helicoptero0, int centroF, int helicopteroF) {
-        Grupo grupo = grupos.get(igrupo);
-        ArrayList<DesastresSalidaHelicoptero> salidasHelicoptero0 = salidas.get(centro0).get(helicoptero0);
-        for (DesastresSalidaHelicoptero salida : salidasHelicoptero0) {
+    /**
+     * @return Si grupo era rescatado por el helicoptero0 del centro0 devuelve un nuevo estado en el que
+     * grupo pasa a ser rescatado por el helicopteroF del centroF.
+     *
+     * Si grupo directamente no era rescatado por el helicoptero0 del centro0 devuelve null.
+     */
+    public DesastresEstado reasignaGrupo(Grupo grupo, int centro0, int helicoptero0, int centroF, int helicopteroF) {
+        ArrayList<DesastresRescate> rescatesHelicoptero0 = this.rescates.get(centro0).get(helicoptero0);
 
+        for (int i = 0; i < rescatesHelicoptero0.size(); ++i) {
+            if (rescatesHelicoptero0.get(i).rescataGrupo(grupo)) {
+                DesastresEstado resultado = this.clone();
+                DesastresRescate rescate0 = resultado.rescates.get(centro0).get(helicoptero0).get(i);
+                rescate0.desasignaGrupo(grupo);
+                if (rescate0.personasRescatadas() == 0) {
+                    resultado.rescates.get(centro0).get(helicoptero0).remove(rescate0);
+                }
+
+                ArrayList<DesastresRescate> rescatesHelicopteroF = resultado.rescates.get(centroF).get(helicopteroF);
+
+                boolean asignado = false;
+                for (DesastresRescate rescateF : rescatesHelicopteroF) {
+                    if (rescateF.asignaGrupo(grupo)) {
+                        asignado = true;
+                        break;
+                    }
+                }
+                if (!asignado) {
+                    rescatesHelicopteroF.add(new DesastresRescate(centros.get(centroF), grupo, null, null));
+                }
+                return resultado;
+            }
         }
         return null;
     }
+
 
 
     // devuelve el tiempo total en rescatar a todos los grupos,
@@ -56,21 +114,21 @@ public class DesastresEstado {
             Centro centro = centros.get(iCentro);
             // para cada helicóptero en el centro,
             for (int iHelicop = 0; iHelicop < centro.getNHelicopteros(); ++iHelicop) {
-                ArrayList<DesastresSalidaHelicoptero> salidasHelicoptero = salidas.get(iCentro).get(iHelicop);
-                // para cada salida del helicóptero,
-                boolean primeraSalida = true;
-                for (DesastresSalidaHelicoptero salida : salidasHelicoptero) {
-                    if (primeraSalida) {
-                        primeraSalida = false;
+                ArrayList<DesastresRescate> rescatesHelicoptero = rescates.get(iCentro).get(iHelicop);
+                // para cada rescate del helicóptero,
+                boolean primerRescate = true;
+                for (DesastresRescate rescate : rescatesHelicoptero) {
+                    if (primerRescate) {
+                        primerRescate = false;
                     } else {
-                        tiempoTotal = COOLDOWN_SALIDA;
+                        tiempoTotal = COOLDOWN_RESCATE;
                     }
                     // añadimos el tiempo de vuelo vuelo
-                    tiempoTotal += salida.tiempo();
+                    tiempoTotal += rescate.tiempo();
+
                     // marcamos los grupos como rescatados
-                    gruposPrioridadNoRescatados.remove(salida.g1);
-                    gruposPrioridadNoRescatados.remove(salida.g2);
-                    gruposPrioridadNoRescatados.remove(salida.g3);
+                    for (Grupo g : rescate.grupos())
+                        gruposPrioridadNoRescatados.remove(g);
                 }
                 if (gruposPrioridadNoRescatados.isEmpty()) {
                     tiempoPrioridad = tiempoTotal;
@@ -80,17 +138,48 @@ public class DesastresEstado {
         return new double[]{tiempoTotal, tiempoPrioridad};
     }
 
-    public String display() {
-        return "";
+    public String infoGrupos() {
+        StringBuilder ret = new StringBuilder();
+        for (int i = 0; i < grupos.size(); ++i) {
+            Grupo g = grupos.get(i);
+            ret.append(String.format("\nGrupo %d: %d pers   %s", i, g.getNPersonas(), g.getPrioridad() == 1? "PRIO" : ""));
+        }
+        return ret.toString();
+    }
+
+    public String infoRescates() {
+        StringBuilder ret = new StringBuilder();
+        for (int i = 0; i < centros.size(); ++i) {
+            ret.append(String.format("\nCentro %d:", i));
+            for (int j = 0; j < centros.get(i).getNHelicopteros(); ++j) {
+                ret.append(String.format("\n\t Helicoptero %d: ", j));
+                for (DesastresRescate res : rescates.get(i).get(j)) {
+                    ret.append("{ ");
+                    for (Grupo g : res.grupos())
+                        ret.append(grupos.indexOf(g)).append(" ");
+                    ret.append("}  ");
+                }
+            }
+        }
+        return ret.toString();
     }
 
     @Override
-    public DesastresEstado clone() throws CloneNotSupportedException {
-        // No hace falta clonar centros y grupos ya que son constantes.
-        DesastresEstado ret = (DesastresEstado) (super.clone());
-
-        // clonamos las salidas
-        ret.salidas = (ArrayList<ArrayList<ArrayList<DesastresSalidaHelicoptero>>>)salidas.clone();
-        return ret;
+    public DesastresEstado clone() {
+        ArrayList<ArrayList<ArrayList<DesastresRescate>>> rescatesC = new ArrayList<>();
+        for (ArrayList<ArrayList<DesastresRescate>> rescatesCentro : rescates) {
+            ArrayList<ArrayList<DesastresRescate>> rescatesCentroC = new ArrayList<>();
+            for (ArrayList<DesastresRescate> rescatesHelicop : rescatesCentro) {
+                ArrayList<DesastresRescate> rescatesHelicopC = new ArrayList<>();
+                for (DesastresRescate rescate : rescatesHelicop) {
+                    rescatesHelicopC.add(rescate.clone());
+                }
+                rescatesCentroC.add(rescatesHelicopC);
+            }
+            rescatesC.add(rescatesCentroC);
+        }
+        DesastresEstado cloned = new DesastresEstado(centros, grupos);
+        cloned.rescates = rescatesC;
+        return cloned;
     }
 }

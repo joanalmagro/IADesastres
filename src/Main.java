@@ -8,8 +8,8 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // Parametros del problema
         int ncentros = 5;
-        int ngrupos = 100;
-        int nhelicopteros = 1;
+        int ngrupos = 10;
+        int nhelicopteros = 2;
 
         int seed = 31415;
 
@@ -24,17 +24,19 @@ public class Main {
         Search algSA = new SimulatedAnnealingSearch(steps, stiter, k, lamb);
 
         // Inicialicamos estado
-        DesastresEstado estadoInicial = new DesastresEstado(ncentros, nhelicopteros, ngrupos, seed);
+        DesastresEstado estadoInicial = new DesastresEstado(ncentros, nhelicopteros, ngrupos, seed, DesastresEstado.ModoInicial.ESTUPIDO);
+
+        System.out.println(estadoInicial.infoGrupos());
 
         System.out.println("---------------------- ESTADO INICIAL ---------------");
-        System.out.println(estadoInicial.display());
+        System.out.println(estadoInicial.infoRescates());
         System.out.println();
 
         // Create the Problem object
         Problem p = new Problem(estadoInicial,
                 new DesastresSuccessorFunction(),
                 new DesastresGoalTest(),
-                new DesastresHeuristicFunction1());
+                new DesastresHeuristicFunction2());
 
         // Instantiate the SearchAgent object
         long t0 = java.lang.System.currentTimeMillis();
@@ -45,7 +47,7 @@ public class Main {
 
 
         System.out.println("---------------------- ESTADO FINAL ---------------");
-        System.out.println(estadoFinal.display());
+        System.out.println(estadoFinal.infoRescates());
         System.out.println();
         System.out.println("Elapsed time: " + (tf - t0) + "ms");
 
