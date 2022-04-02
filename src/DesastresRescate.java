@@ -2,9 +2,10 @@ import IA.Desastres.Centro;
 import IA.Desastres.Grupo;
 
 import java.util.ArrayList;
+import java.util.List;
 
-// Representa un rescate de un helicóptero. El helicoptero se encuentra en el centro C y rescata a los grupos
-// g1, g2, y g3. Si alguno es nulo, no lo tiene en cuenta.
+// Representa un rescate de un helicóptero. El helicoptero se encuentra en el centro c y rescata a los grupos
+// no nulos de entre g1, g2, y g3.
 class DesastresRescate {
 
     private static final int CAPACIDAD_HELICOPTERO = 15;
@@ -12,12 +13,10 @@ class DesastresRescate {
     private static final double TIEMPO_RESCATE_PERSONA = 1.0; // min
     private static final double FACTOR_HERIDO = 2.0; // se tarda el doble en rescatar a un herido
 
-    private Centro c;
+    private final Centro c;
     private Grupo g1;
     private Grupo g2;
     private Grupo g3;
-
-    public DesastresRescate() { }
 
     public DesastresRescate(Centro c, Grupo g1, Grupo g2, Grupo g3) {
         this.c = c;
@@ -26,8 +25,9 @@ class DesastresRescate {
         this.g3 = g3;
     }
 
-    public ArrayList<Grupo> grupos() {
-        ArrayList<Grupo> ret = new ArrayList<>();
+    // Lista con los grupos (possiblemente nulos) de este rescate
+    public List<Grupo> grupos() {
+        List<Grupo> ret = new ArrayList<>();
         ret.add(g1);
         ret.add(g2);
         ret.add(g3);
@@ -36,23 +36,17 @@ class DesastresRescate {
 
     @Override
     public DesastresRescate clone() {
-        DesastresRescate ret = new DesastresRescate();
-        ret.c = this.c;
-        ret.g1 = this.g1;
-        ret.g2 = this.g2;
-        ret.g3 = this.g3;
-        return ret;
+        return new DesastresRescate(c, g1, g2, g3);
     }
 
+    // Numero total de personas rescatadas en este rescate
     public int personasRescatadas() {
         return (g1 == null ? 0 : g1.getNPersonas()) +
                 (g2 == null ? 0 : g2.getNPersonas()) +
                 (g3 == null ? 0 : g3.getNPersonas());
     }
 
-
-
-    // intenta asignar el grupo g a los grupos rescatados. Si ha sido posible, devuelve true
+    // Intenta asignar el grupo g a los grupos rescatados. Si ha sido posible, devuelve true
     public boolean asignaGrupo(Grupo g) {
         if (g.getNPersonas() + personasRescatadas() > CAPACIDAD_HELICOPTERO || rescataGrupo(g)) {
             return false;
@@ -69,11 +63,12 @@ class DesastresRescate {
         return true;
     }
 
+    // Devuelve true si este rescate rescata al grupo g
     public boolean rescataGrupo(Grupo g) {
         return g == null || g.equals(g1) || g.equals(g2) || g.equals(g3);
     }
 
-    // desasigna el grupo g a la salida.
+    // Desasigna el grupo g a este rescate
     public void desasignaGrupo(Grupo g) {
         if (g.equals(g1)) {
             g1 = null;
@@ -84,6 +79,7 @@ class DesastresRescate {
         }
     }
 
+    // Tiempo total en hacer el rescate de los grupos de este rescate
     public double tiempo() {
         return tiempoRescate() + tiempoVuelo();
     }
@@ -100,18 +96,18 @@ class DesastresRescate {
     }
 
     private double tiempoVuelo() {
-        ArrayList<Grupo> grupos = new ArrayList<>();
+        List<Grupo> grupos = new ArrayList<>();
         if (g1 != null) grupos.add(g1);
         if (g2 != null) grupos.add(g2);
         if (g3 != null) grupos.add(g3);
 
         // Posibles trayectos permutando el orden de los grupos no nulos. buscamos el óptimo
-        ArrayList<ArrayList<Grupo>> trayectos = permute(grupos);
+        List<List<Grupo>> trayectos = permute(grupos);
 
         double distanciaOptimaGrupos = Double.MAX_VALUE;
-        ArrayList<Grupo> trayectoOptimo = new ArrayList<>();
+        List<Grupo> trayectoOptimo = new ArrayList<>();
 
-        for (ArrayList<Grupo> trayecto : trayectos) {
+        for (List<Grupo> trayecto : trayectos) {
             double distanciaTemp = 0;
             for (int i = 1; i < trayecto.size(); ++i) {
                 distanciaTemp += d(trayecto.get(i - 1).getCoordX(), trayecto.get(i - 1).getCoordY(),
@@ -136,14 +132,19 @@ class DesastresRescate {
     }
 
 
+    // Utils
+
+    // distancia euclidea entre (x1, y1) y (x2, y2)
+    private static double d(int x1, int y1, int x2, int y2) { return Math.hypot(x1 - x2, y1 - y2); }
+
     // [1,2,3] -> [ [1,2,3],[2,3,1],[3,1,2],[1,3,2],[2,1,3],[3,2,1] ]
-    private static<T> ArrayList<ArrayList<T>> permute(ArrayList<T> arr) {
-        ArrayList<ArrayList<T>> list = new ArrayList<>();
+    private static<T> List<List<T>> permute(List<T> arr) {
+        List<List<T>> list = new ArrayList<>();
         permuteImpl(list, new ArrayList<>(), arr);
         return list;
     }
 
-    private static<T> void permuteImpl(ArrayList<ArrayList<T>> list, ArrayList<T> resultList, ArrayList<T> arr) {
+    private static<T> void permuteImpl(List<List<T>> list, List<T> resultList, List<T> arr) {
         if (resultList.size() == arr.size()) {
             list.add(new ArrayList<>(resultList));
         } else {
@@ -155,10 +156,5 @@ class DesastresRescate {
                 }
             }
         }
-    }
-
-    // distancia euclidea entre (x1, y1) y (x2, y2)
-    private static double d(int x1, int y1, int x2, int y2) {
-        return Math.hypot(x1 - x2, y1 - y2);
     }
 }
