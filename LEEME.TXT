@@ -1,0 +1,62 @@
+============================
+ PRÁCTICA DE BÚSQUEDA LOCAL
+============================
+
+--------------
+1) Preparación
+--------------
+1. Descomprimir el archivo IADesastres.zip:
+
+ $ unzip IADesastres.zip
+
+que incluye:
+ src              - código fuente de nuestra solución
+ lib              - dependencias `Desastres.jar` y `AIMA.jar`
+ IADesastres.jar  - archivo .jar preparado para ser ejecutado
+ build.sh         - script para compilar y generar `IADesastres.jar`
+
+
+2. Cambiar al directorio del proyecto:
+
+ $ cd IADesastres
+
+------------
+2) Ejecución
+------------
+Des de la raïz del proyecto ejecutar en el terminal:
+
+ $ java -jar IADesastres 
+
+
+-------------------------
+3) Compilación (opcional)
+-------------------------
+Para reproducir los pasos de compilacion y recrear nuestro `IADesastres.jar` des de el terminal en la raíz del proyecto:
+
+1. Compilar los fuentes en el directorio `./tmp`:
+
+ $ javac src/*.java -cp "lib/*" -d tmp
+
+2. Extraer las dependencias junto a los archivos compilados en el directorio `./tmp`:
+
+ $ unzip -qo "lib/*" -d tmp
+
+3. Generar `IADesastres.jar`:
+
+ $ jar cfe IADesastres.jar Main -C tmp .
+
+   - o -
+
+1. Ejecutar directamente el script `build.sh`, que incluye todos los pasos anteriores:
+
+ $ ./build.sh
+	
+
+	
+
+
+
+
+
+
+
