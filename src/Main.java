@@ -25,7 +25,7 @@ public class Main {
         Search alg = algHC;
 
         // Inicialicamos estado
-        DesastresEstado estadoInicial = new DesastresEstado(ncentros, nhelicopteros, ngrupos, seed, DesastresEstado.ModoInicial.ASIGNA_CENTRO_ALEATORIO);
+        DesastresEstado estadoInicial = new DesastresEstado(ncentros, nhelicopteros, ngrupos, seed, DesastresEstado.ModoInicial.ASIGNA_CENTRO_EQUIT);
 
         System.out.println("---------------------- INFO CENTROS ---------------");
         System.out.println(estadoInicial.infoGrupos());

@@ -15,7 +15,7 @@ public class DesastresEstado {
         ESTUPIDO,
         LLENA_RESCATES,
         PRIMERO_PRIO,
-        ASIGNA_CENTRO_ALEATORIO
+        ASIGNA_CENTRO_EQUIT
     }
 
     private static final double COOLDOWN_RESCATE = 10; // min
@@ -71,10 +71,13 @@ public class DesastresEstado {
                         rescatesH.add(new DesastresRescate(centros.get(0), grupo, null, null));
 
                 }
-            case  ASIGNA_CENTRO_ALEATORIO:
+            case  ASIGNA_CENTRO_EQUIT:
+                int centro = 0;
                 for (Grupo grupo : grupos) {
-                    int randomNum = (int)(Math.random() * ncentros);
-                    List<DesastresRescate> rescatesH = rescates.get(randomNum).get(0);
+                    List<DesastresRescate> rescatesH = rescates.get(centro).get(0);
+                    if (centro < ncentros - 1) ++centro;
+                    else centro = 0;
+
                     boolean asignado = false;
                     for (DesastresRescate rescate : rescatesH) {
                         if (rescate.asignaGrupo(grupo)) {
@@ -84,6 +87,7 @@ public class DesastresEstado {
                     }
                     if (!asignado)
                         rescatesH.add(new DesastresRescate(centros.get(0), grupo, null, null));
+
 
                 }
             case PRIMERO_PRIO:
