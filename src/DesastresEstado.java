@@ -10,13 +10,9 @@ import java.util.List;
 
 public class DesastresEstado {
 
-    // Opciones para la solucion inicial.
-    public enum ModoInicial {
-        ESTUPIDO,
-        LLENA_RESCATES,
-        PRIMERO_PRIO,
-        ASIGNA_CENTRO_EQUIT
-    }
+    public static final int INIT_ESTUPIDO = 0;
+    public static final int INIT_LLENA_RESCATES = 1;
+    public static final int INIT_CENTRO_EQUIT = 2;
 
     private static final double COOLDOWN_RESCATE = 10; // min
 
@@ -36,7 +32,7 @@ public class DesastresEstado {
     }
 
     // Constructor
-    public DesastresEstado(int ncentros, int nhelicopteros, int ngrupos, int seed, ModoInicial inicio) {
+    public DesastresEstado(int ncentros, int nhelicopteros, int ngrupos, int seed, int inicio) {
         this.centros = new Centros(ncentros, nhelicopteros, seed);
         this.grupos = new Grupos(ngrupos, seed);
 
@@ -52,12 +48,12 @@ public class DesastresEstado {
         }
 
         switch (inicio) {
-            case ESTUPIDO: // El primer helicoptero del primer grupo lo hace todo
+            case INIT_ESTUPIDO: // El primer helicoptero del primer grupo lo hace todo
                 for (Grupo grupo : grupos) {
                     rescates.get(0).get(0).add(new DesastresRescate(centros.get(0), grupo, null, null));
                 }
                 break;
-            case LLENA_RESCATES: // Igual que el primero, pero intentando juntar grupos en un mismo rescate
+            case INIT_LLENA_RESCATES: // Igual que el primero, pero intentando juntar grupos en un mismo rescate
                 for (Grupo grupo : grupos) {
                     List<DesastresRescate> rescatesH = rescates.get(0).get(0);
                     boolean asignado = false;
@@ -71,7 +67,7 @@ public class DesastresEstado {
                         rescatesH.add(new DesastresRescate(centros.get(0), grupo, null, null));
 
                 }
-            case  ASIGNA_CENTRO_EQUIT:
+            case INIT_CENTRO_EQUIT:
                 int centro = 0;
                 for (Grupo grupo : grupos) {
                     List<DesastresRescate> rescatesH = rescates.get(centro).get(0);
@@ -90,9 +86,6 @@ public class DesastresEstado {
 
 
                 }
-            case PRIMERO_PRIO:
-                /* TODO! Implementar más soluciones iniciales. Por ejemplo que primero se rescaten los grupos de prioridad */
-                break;
         }
     }
 

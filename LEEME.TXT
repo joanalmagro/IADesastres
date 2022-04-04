@@ -25,7 +25,12 @@ que incluye:
 ------------
 Des de la raïz del proyecto ejecutar en el terminal:
 
- $ java -jar IADesastres 
+ $ java jar IADesastres.jar
+
+Para ver las opciones que admite el CLI:
+
+ $ java jar IADesastres.jar -help
+ > Usage: java jar IADesastres.jar [-ncentros numero-centros] [-nhelicopteros numero-helicopteros] [-seed custom-seed] [None|-HC|-SA n-steps st-iter k lamb] [-init 0|1|2] [-heuristic 0|1]
 
 
 -------------------------
